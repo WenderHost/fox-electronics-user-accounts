@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:     Fox Electronics User Accounts
- * Plugin URI:      PLUGIN SITE HERE
+ * Plugin URI:      https://github.com/WenderHost/fox-electronics-user-accounts
  * Description:     Extends user accounts for integration with Fox Electronics business rules and SalesForce integration.
  * Author:          Michael Wender
  * Author URI:      https://michaelwender.com
