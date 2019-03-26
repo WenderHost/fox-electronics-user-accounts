@@ -25,7 +25,7 @@ $args = [
   'single' => true,
   'show_in_rest' => true
 ];
-$user_company_meta = ['name' => 'Maps to Salesforce `accountname`.','type' => '','street' => '','city' => '','state' => ''];
+$user_company_meta = ['name' => 'Maps to Salesforce `accountname`.','type' => '','street' => '','city' => '','state' => '','zip' => ''];
 foreach( $user_company_meta as $meta_key => $meta_description ){
   $args['description'] = $meta_description;
   register_meta( 'user', 'company_' . $meta_key, $args );

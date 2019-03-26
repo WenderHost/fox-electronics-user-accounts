@@ -97,6 +97,7 @@ function create_lead( $user, $RestRequest, $creating ){
       'address'       => $request_json['meta']['company_street'],
       'city'          => $request_json['meta']['company_city'],
       'state'         => $request_json['meta']['company_state'],
+      'zip'           => $request_json['meta']['company_zip'],
     ],
   ]);
 
