@@ -18,6 +18,7 @@ define( 'FOXELECTRONICS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Load required files
 require_once( 'lib/fns/jwt-authentication.php' );
 require_once( 'lib/fns/salesforce.php' );
+require_once( 'lib/fns/utilities.php' );
 
 // Add User Meta Fields
 $args = [

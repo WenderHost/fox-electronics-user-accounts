@@ -8,19 +8,19 @@ namespace FoxElectronics\fns\salesforce;
  * TODO: Add a `permission_callback`
  */
 function salesforce_endpoint(){
-  register_rest_route( FOXELECTRONICS_API_NAMESPACE, '/(?P<action>login|getWebUser|postWebUser)', [
-    'methods'   => 'GET',
+  register_rest_route( FOXELECTRONICS_API_NAMESPACE, '/(?P<action>login|getWebUser|postWebUser|postRFQ)', [
+    'methods'   => 'GET,POST',
     'callback'  => function( \WP_REST_Request $request ){
       if( is_wp_error( $request ) )
         return $request;
 
-      if( ! defined( 'FOXELECTRONCIS_SF_API_ROUTE' ) )
-        return new \WP_Error( 'noapiroute', __('No `FOXELECTRONCIS_SF_API_ROUTE` defined. Please add to `FOXELECTRONCIS_SF_API_ROUTE` to your wp-config.php.') );
+      if( ! defined( 'FOXELECTRONICS_SF_API_ROUTE' ) )
+        return new \WP_Error( 'noapiroute', __('No `FOXELECTRONICS_SF_API_ROUTE` defined. Please add to `FOXELECTRONICS_SF_API_ROUTE` to your wp-config.php.') );
 
       $params = $request->get_params();
       $action = $params['action'];
 
-      $valid_params = ['email','id','accountname','firstname','lastname'];
+      $valid_params = ['email','id','accountname','firstname','lastname','rfq','cart','user'];
       foreach ( $valid_params as $key ) {
         $$key = ( isset( $params[$key] ) )? $params[$key] : null ;
       }
@@ -40,6 +40,26 @@ function salesforce_endpoint(){
             'query' => [
               'email'         => $email,
               'id'            => $id,
+            ],
+          ]);
+          break;
+
+        case 'postRFQ':
+          if( ! isset( $_SESSION['SF_SESSION'] ) )
+            login();
+
+          $response = new \stdClass();
+          $rfq = ( isset( $rfq ) )? $rfq : null ;
+          $cart = ( isset( $cart ) )? $cart : null ;
+          $user = ( isset( $user ) )? $user : null ;
+          $response->rfq = $rfq;
+          $formatted_rfq = \FoxElectronics\fns\utilities\formatRFQ( $user, $rfq, $cart );
+
+          $response = postRFQ([
+            'access_token'  => $_SESSION['SF_SESSION']->access_token,
+            'instance_url'  => $_SESSION['SF_SESSION']->instance_url,
+            'body' => [
+              'rfq' => $formatted_rfq,
             ],
           ]);
           break;
@@ -135,7 +155,7 @@ function getWebUser( $args = [] ){
   if( is_null( $args['query']['email'] ) && is_null( $args['query']['id'] ) )
     return new \WP_Error( 'noemailorid', __('No contact `email` or `id` provided.') );
 
-  $request_url = trailingslashit( $args['instance_url'] ) . FOXELECTRONCIS_SF_API_ROUTE . '?' . http_build_query( $args['query'] );
+  $request_url = trailingslashit( $args['instance_url'] ) . FOXELECTRONICS_SF_API_ROUTE . 'WebUser' . '?' . http_build_query( $args['query'] );
 
   $response = wp_remote_get( $request_url, [
     'method' => 'GET',
@@ -181,10 +201,10 @@ function postWebUser( $args = [] ){
   $required_body_fields = ['email','accountname','firstname','lastname'];
   foreach ($required_body_fields as $field ) {
     if( ! isset( $args['body'][$field] ) || is_null( $args['body'][$field] ) )
-      return new \WP_Error('nobody' . $field, __( 'Required field `' . $field . '` missing or empty.' ) );
+      return new \WP_Error('missingfield' . $field, __( 'Required field `' . $field . '` missing or empty.' ) );
   }
 
-  $request_url = trailingslashit( $args['instance_url'] ) . FOXELECTRONCIS_SF_API_ROUTE;
+  $request_url = trailingslashit( $args['instance_url'] ) . FOXELECTRONICS_SF_API_ROUTE . 'WebUser';
 
   $response = wp_remote_post( $request_url, [
     'method' => 'POST',
@@ -196,6 +216,53 @@ function postWebUser( $args = [] ){
     ],
     'body' => json_encode( $args['body'] ),
   ]);
+
+  if( ! is_wp_error( $response ) ){
+    $data = json_decode( wp_remote_retrieve_body( $response ) );
+    $response = new \stdClass();
+    $response->data = $data;
+  }
+
+  return $response;
+}
+
+/**
+ * Posts a Request for Quotation.
+ *
+ * @param      array  $args   The arguments
+ *
+ * @return     \      ( description_of_the_return_value )
+ */
+function postRFQ( $args = [] ){
+  if( ! isset( $args['access_token'] ) || empty( $args['access_token'] ) )
+    return new \WP_Error( 'noaccesstoken', __('No Access Token provided.') );
+
+  if( ! isset( $args['instance_url'] ) || empty( $args['instance_url'] ) )
+    return new \WP_Error( 'noinstanceurl', __('No Instance URL provided.') );
+
+  $required_body_fields = ['rfq'];
+  foreach ($required_body_fields as $field ) {
+    if( ! isset( $args['body'][$field] ) || is_null( $args['body'][$field] ) )
+      return new \WP_Error('missingfield' . $field, __( 'Required field `' . $field . '` missing or empty.' ) );
+  }
+
+  $request_url = trailingslashit( $args['instance_url'] ) . FOXELECTRONICS_SF_API_ROUTE . 'WebPart';
+
+  $rfq_in_json = json_encode( $args['body']['rfq'] );
+
+  $response = wp_remote_post( $request_url, [
+    'method' => 'POST',
+    'timeout' => 30,
+    'redirection' => 5,
+    'headers' => [
+      'Authorization' => 'Bearer ' . $args['access_token'],
+      'Content-Type' => 'application/json',
+    ],
+    'body' => $rfq_in_json,
+  ]);
+
+  error_log('[postRFQ] This is the response from Salesforce: $response = ' . print_r( $response, true ) );
+  error_log('[postRFQ] This is what we sent: ' . $rfq_in_json );
 
   if( ! is_wp_error( $response ) ){
     $data = json_decode( wp_remote_retrieve_body( $response ) );
