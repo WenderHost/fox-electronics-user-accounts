@@ -6,10 +6,10 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
   $parts = [];
   if( is_array( $cart ) && 0 < count( $cart ) ){
     foreach( $cart as $part ){
-      if( is_null( $part['options']['evaluationDate'] ) ){
+      if( is_null( $part['options']['evalDate'] ) ){
         $evaluation_date = new \DateTime();
       } else {
-        $evaluation_date = new \DateTime( $part['options']['evaluationDate'] );
+        $evaluation_date = new \DateTime( $part['options']['evalDate'] );
       }
       $evaluation_date = $evaluation_date->format('Y-m-d');
 
