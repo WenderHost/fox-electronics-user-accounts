@@ -31,8 +31,8 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
   $prototype_date = new \DateTime($rfq['prototype_date']);
   $production_date = new \DateTime($rfq['production_date']);
 
-  $firstname = $user['first_name'];
-  $lastname = $user['last_name'];
+  $shippingfirstname = $user['first_name'];
+  $shippinglastname = $user['last_name'];
 
   // We have an alternate shipping address contact
   if( ! empty( $rfq['shipping_address']['contact'] ) ){
@@ -42,16 +42,16 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
     if( stristr( $shipping_address_contact, ' ' ) ){
       $shipping_contact = explode( ' ', $shipping_address_contact );
       if( 2 < count( $shipping_contact ) ){
-        $lastname = array_pop( $shipping_contact );
-        $firstname = implode( ' ', $shipping_contact );
+        $shippinglastname = array_pop( $shipping_contact );
+        $shippingfirstname = implode( ' ', $shipping_contact );
       } else if( 2 == count( $shipping_contact ) ){
-        $firstname = $shipping_contact[0];
-        $lastname = $shipping_contact[1];
+        $shippingfirstname = $shipping_contact[0];
+        $shippinglastname = $shipping_contact[1];
       }
     // The shipping contact is just one name
     } else {
-      $firstname = $shipping_address_contact;
-      $lastname = '';
+      $shippingfirstname = $shipping_address_contact;
+      $shippinglastname = '';
     }
 
   }
@@ -59,8 +59,8 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
   $formatted_rfq = [
     'salesforceID' => $user['salesforceID'],
     'status' => $user['status'],
-    'firstname' => $firstname,
-    'lastname' => $lastname,
+    'firstname' => $user['first_name'],
+    'lastname' => $user['last_name'],
     'email' => $user['user_email'],
     'accountname' => $user['company_name'],
     'accounttype' => $user['company_type'],
@@ -69,6 +69,8 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
     'state' => $user['company_state'],
     'projectname' => $rfq['project_name'],
     'projectdescription' => $rfq['project_description'],
+    'shippingfirstname' => $shippingfirstname,
+    'shippinglastname' => $shippinglastname,
     'shippingaddress' => $rfq['shipping_address']['street'],
     'shippingcity' => $rfq['shipping_address']['city'],
     'shippingstate' => $rfq['shipping_address']['state'],
