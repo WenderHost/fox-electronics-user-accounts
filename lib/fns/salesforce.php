@@ -8,7 +8,11 @@ namespace FoxElectronics\fns\salesforce;
  * TODO: Add a `permission_callback`
  */
 function salesforce_endpoint(){
-  register_rest_route( FOXELECTRONICS_API_NAMESPACE, '/(?P<action>login|getWebUser|postWebUser|postRFQ)', [
+  // 05/06/2019 (06:39) - just removed `login|` from actions in register_rest_route below.
+  // I don't think it's being used. We use the route provided by the JWT Auth plugin to
+  // login. So, far the only route being used that I can tell from FOXSelect React code is
+  // `postRFQ`. HOWEVER, I DO believe `login()` is being used internally when we `postRFQ`.
+  register_rest_route( FOXELECTRONICS_API_NAMESPACE, '/(?P<action>getWebUser|postWebUser|postRFQ)', [
     'methods'   => 'GET,POST',
     'callback'  => function( \WP_REST_Request $request ){
       if( is_wp_error( $request ) )
@@ -26,9 +30,11 @@ function salesforce_endpoint(){
       }
 
       switch( $action ){
+        /*
         case 'login':
           $response = login();
           break;
+        */
 
         case 'getWebUser':
           if( ! isset( $_SESSION['SF_SESSION'] ) )
@@ -91,6 +97,9 @@ add_action( 'rest_api_init', __NAMESPACE__ . '\\salesforce_endpoint' );
 
 /**
  * Creates a lead via our Salesforce API.
+ *
+ * Hooked to `rest_insert_user`, gets called when we create
+ * a user via the WordPress REST API.
  *
  * @param      object   $user         The user
  * @param      object   $RestRequest  The rest request

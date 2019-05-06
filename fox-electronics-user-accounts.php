@@ -31,3 +31,43 @@ foreach( $user_company_meta as $meta_key => $meta_description ){
   $args['description'] = $meta_description;
   register_meta( 'user', 'company_' . $meta_key, $args );
 }
+
+/**
+ * Handles validations during new user registration
+ *
+ * @param      <type>  $prepared_user  The prepared user
+ * @param      <type>  $request        The request
+ *
+ * @return     <type>  ( description_of_the_return_value )
+ */
+function fox_pre_insert_user( $prepared_user, $request ){
+  //error_log("\n--------------------------------------------\n".'fox_pre_insert_user() $prepared_user = ' . print_r( $prepared_user, true ) );
+  //error_log('$request = ' . print_r( $request, true ) );
+
+  $params = $request->get_params();
+  error_log( '$params = ' . print_r( $params, true ) );
+  $company_params = $params['meta'];
+
+  $required = [];
+  if( empty( $params['first_name'] ) )
+    $required[] = 'First Name';
+
+  if( empty( $params['last_name'] ) )
+    $required[] = 'Last Name';
+
+  foreach( $company_params as $key => $value ){
+    if( empty( $value ) )
+      $required[] = ucwords( str_replace('_', ' ', $key ) );
+  }
+
+  if( 0 < count( $required ) ){
+    wp_send_json_error( [
+      'code' => 'rest_missing_callback_param',
+      'params' => $required,
+      'message' => sprintf( __( 'Missing parameter(s): %s' ), implode( ', ', $required ) ),
+    ], 400 );
+  }
+
+  return $prepared_user;
+}
+add_filter( 'rest_pre_insert_user', 'fox_pre_insert_user', 100, 2 );
