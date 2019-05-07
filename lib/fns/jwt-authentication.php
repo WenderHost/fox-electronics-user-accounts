@@ -18,7 +18,7 @@ namespace FoxElectronics\fns\jwtauth;
 function add_to_login_response( $data ){
   $user = get_user_by( 'email', $data['user_email'] );
 
-  $meta_keys = ['salesforceID','status','company_name','company_street','company_city','company_state','company_zip','company_type','first_name','last_name'];
+  $meta_keys = ['salesforceID','status','company_name','company_street','company_city','company_state','company_zip','company_country','company_type','first_name','last_name'];
   foreach ($meta_keys as $key) {
     $$key = get_user_meta( $user->ID, $key, true );
     $data[$key] = $$key;
