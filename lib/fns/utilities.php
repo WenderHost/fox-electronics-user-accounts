@@ -24,6 +24,7 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
         'datasheet' => $datasheet,
         'evaluationdate' => $evaluation_date,
         'internalpartnumber' => $part['options']['internalPartNo'],
+        'eau' => $part['options']['eau'],
       ];
     }
   }
