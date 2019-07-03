@@ -16,7 +16,7 @@ function formatRFQ( $user = null, $rfq = null, $cart = null ){
       $datasheet = ( is_null( $part['options']['datasheet'] ) )? false : $part['options']['datasheet'] ;
 
       $parts[] = [
-        'partno' => $part['number']['value'],
+        'partno' => $part['number']['label'],
         'description' => formatPartDesc( $part ),
         'sample' => $part['options']['sample'],
         'sampleqty' => $part['options']['sampleNo'],
